@@ -14,7 +14,11 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, perMessageDeflate: true });
 
-app.use(cors());
+// CORS configurado para aceitar requisições do Easypanel
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true
+}));
 app.use(express.json());
 
 // Armazenamento
@@ -362,11 +366,21 @@ app.delete('/api/sessions', async (req, res) => {
 });
 
 // WebSocket otimizado
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
   wsClients.add(ws);
   ws.on('close', () => wsClients.delete(ws));
   ws.on('error', () => wsClients.delete(ws));
   ws.send(JSON.stringify({ type: 'connected' }));
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    sessions: sessions.size,
+    connections: wsClients.size
+  });
 });
 
 // Limpar cache periodicamente
@@ -380,19 +394,21 @@ setInterval(() => {
 }, 300000); // A cada 5 minutos
 
 // Iniciar servidor
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0'; // 0.0.0.0 para aceitar conexões externas (necessário para Docker/Easypanel)
+
+server.listen(PORT, HOST, () => {
   console.log('');
   console.log('╔═══════════════════════════════════════════════════════╗');
   console.log('║        TELEGRAM API - GramJS MTProto                 ║');
   console.log('╚═══════════════════════════════════════════════════════╝');
   console.log('');
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-  console.log(`📡 WebSocket disponível em ws://localhost:${PORT}`);
+  console.log(`🚀 Servidor rodando em http://${HOST}:${PORT}`);
+  console.log(`📡 WebSocket disponível em ws://${HOST}:${PORT}`);
   console.log(`⚡ Otimizado para milhares de conexões simultâneas`);
   console.log('');
   if (!API_ID || !API_HASH) {
-    console.log('⚠️  Configure API_ID e API_HASH no arquivo .env');
+    console.log('⚠️  Configure API_ID e API_HASH via variáveis de ambiente');
     console.log('   Ou use o endpoint POST /api/config');
     console.log('');
   } else {

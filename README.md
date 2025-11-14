@@ -27,15 +27,42 @@ npm install
 
 ## ⚙️ Configuração
 
-Crie um arquivo `.env` na raiz do projeto:
+### Variáveis de Ambiente
+
+Configure as seguintes variáveis de ambiente:
 
 ```env
 API_ID=seu_api_id_aqui
 API_HASH=seu_api_hash_aqui
-PORT=3001
+PORT=3000
+HOST=0.0.0.0
+CORS_ORIGIN=*
 ```
 
 **Obtenha suas credenciais em:** https://my.telegram.org/apps
+
+### Deploy no Easypanel
+
+1. **Criar novo projeto** no Easypanel
+2. **Selecionar "App"** e escolher "Node.js"
+3. **Configurar o repositório:**
+   - Conecte seu repositório GitHub: `https://github.com/marcelomtsv/telegram`
+   - Branch: `main`
+4. **Configurar Build:**
+   - **Build Command:** `npm install`
+   - **Start Command:** `node server.js`
+   - **Port:** `3000` (ou a porta que o Easypanel definir)
+5. **Configurar variáveis de ambiente:**
+   - `API_ID` - Seu API ID do Telegram
+   - `API_HASH` - Seu API Hash do Telegram
+   - `PORT` - Porta (geralmente 3000, o Easypanel define automaticamente via `$PORT`)
+   - `HOST` - `0.0.0.0` (necessário para aceitar conexões externas)
+   - `CORS_ORIGIN` - `*` (ou seu domínio específico)
+6. **Deploy:**
+   - Clique em "Deploy" e aguarde o build
+   - O servidor estará disponível em: `https://promobot-telegram.meoy4a.easypanel.host`
+
+**Nota:** O Easypanel geralmente define a variável `PORT` automaticamente. Se não funcionar, use `3000` como padrão.
 
 ## 🎯 Como usar
 
@@ -51,7 +78,7 @@ Ou em modo desenvolvimento (com auto-reload):
 npm run dev
 ```
 
-O servidor estará rodando em `http://localhost:3001`
+O servidor estará rodando em `http://localhost:3000`
 
 ## 📡 Endpoints da API
 
@@ -202,7 +229,7 @@ Excluir todas as sessões.
 
 ## 🔌 WebSocket
 
-O servidor WebSocket está disponível em `ws://localhost:3001` e envia mensagens em batch:
+O servidor WebSocket está disponível em `ws://localhost:3000` (ou `wss://` para HTTPS) e envia mensagens em batch:
 
 **Mensagem recebida:**
 ```json
@@ -233,7 +260,7 @@ O servidor WebSocket está disponível em `ws://localhost:3001` e envia mensagen
 
 ```javascript
 // Configurar credenciais
-await fetch('http://localhost:3001/api/config', {
+await fetch('http://localhost:3000/api/config', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -243,7 +270,7 @@ await fetch('http://localhost:3001/api/config', {
 });
 
 // Criar sessão
-const response = await fetch('http://localhost:3001/api/sessions', {
+const response = await fetch('http://localhost:3000/api/sessions', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -257,14 +284,14 @@ const response = await fetch('http://localhost:3001/api/sessions', {
 const { sessionId } = await response.json();
 
 // Verificar código
-await fetch(`http://localhost:3001/api/sessions/${sessionId}/verify`, {
+await fetch(`http://localhost:3000/api/sessions/${sessionId}/verify`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ code: '12345' })
 });
 
 // Conectar WebSocket
-const ws = new WebSocket('ws://localhost:3001');
+const ws = new WebSocket('ws://localhost:3000'); // Use wss:// para HTTPS
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   if (data.type === 'batch_messages') {
