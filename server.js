@@ -109,7 +109,7 @@ async function getCachedEntity(client, entityId, ttl = 300000) { // 5 minutos
 function saveCredentials(apiId, apiHash) {
   API_ID = parseInt(apiId);
   API_HASH = apiHash;
-  fs.writeFileSync('.env', `API_ID=${API_ID}\nAPI_HASH=${API_HASH}\nPORT=3001\n`, 'utf8');
+  fs.writeFileSync('.env', `API_ID=${API_ID}\nAPI_HASH=${API_HASH}\nPORT=3003\n`, 'utf8');
   dotenv.config();
 }
 
@@ -394,7 +394,7 @@ setInterval(() => {
 }, 300000); // A cada 5 minutos
 
 // Iniciar servidor
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 const HOST = process.env.HOST || '0.0.0.0'; // 0.0.0.0 para aceitar conexões externas (necessário para Docker/Easypanel)
 
 server.listen(PORT, HOST, () => {
